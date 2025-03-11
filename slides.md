@@ -7,7 +7,7 @@ author: Dominik
 Rust Error Handling
 ---
 <!-- jump_to_middle -->
-<!-- column_layout: [1,3, 1] -->
+<!-- column_layout: [1,4, 1] -->
 <!-- column: 1 -->
 
 * Unrecoverable vs. recoverable errors
@@ -24,8 +24,8 @@ Unrecoverable vs. recoverable errors
 ---
 
 * RFC 236: Conventions around error handling in Rust
-* Rust provides two basic strategies for dealing with errors:
-  * Task failure (`panic!()`), which involves stack unwinding
+* Two basic strategies for dealing with errors:
+  * Task failure (`panic!()`) with stack unwinding
     * For catastrophic errors (e.g. out of memory) and contract violations (e.g. out of bounds indexing)
     * Recovered at a "coarse grain" (the task boundary)
 <!-- pause -->
@@ -95,7 +95,7 @@ contents = Path("inexistent.txt").read_text()
 What `Result` doesn't involve
 ---
 <!-- jump_to_middle -->
-<!-- column_layout: [1,3, 1] -->
+<!-- column_layout: [1,4, 1] -->
 <!-- column: 1 -->
 * Special language support
   * `?` is just syntactic sugar
@@ -112,9 +112,9 @@ What `Result` doesn't involve
 Some neat examples of `Err(E)`
 ---
 <!-- jump_to_middle -->
-<!-- column_layout: [1,3, 1] -->
+<!-- column_layout: [1,4, 1] -->
 <!-- column: 1 -->
-`E` is an arbitrary, unconstrained type.
+`E` is an arbitrary, unconstrained type
 
 => flexible fallibility patterns
 
@@ -122,7 +122,7 @@ Quiz time!
 
 <!-- end_slide -->
 
-Attempting to fit a mis-sized vector into an array
+`Err(E)` tricks: Creating an array from mis-sized vector
 ---
 
 ```rust +exec
@@ -150,7 +150,7 @@ Similar patterns:
 
 <!-- end_slide -->
 
-Failed binary search on a slice
+`Err(E)` tricks: Binary search miss on a slice
 ---
 
 ```rust
@@ -177,7 +177,7 @@ impl [T] {
 
 <!-- end_slide -->
 
-Invalid update of atomic types
+`Err(E)` tricks: Unsuccessful update of atomic types
 ---
 
 ```rust
@@ -209,7 +209,7 @@ impl AtomicU8 {
 
 <!-- end_slide -->
 
-Locking a poisoned `Mutex`
+`Err(E)` tricks: Locking a poisoned `Mutex`
 ---
 
 ```rust
@@ -260,8 +260,9 @@ pub trait Error: Debug + Display {
     fn provide<'a>(&'a self, request: &mut Request<'a>) { ... } // nightly
 }
 ```
+<!-- pause -->
 * Almost a marker trait
-  * See boring implementations for e.g. `std::io::Error` or `std::fmt::Error`
+  * See e.g. boring implementations for `std::io::Error` or `std::fmt::Error`
 * Minimal expectations for errors: being able to print themselves
   * `Debug` (for developer) + `Display` (for user)
 <!-- end_slide -->
@@ -345,20 +346,24 @@ pub fn drop<T>(_x: T) {}
 Useful crates
 ---
 
+`anyhow` for applications
+
 ```rust
-pub trait Error: Debug + Display {
-    // Provided methods
-    fn source(&self) -> Option<&(dyn Error + 'static)> { ... } // deprecated
-    fn description(&self) -> &str { ... } // deprecated
-    fn cause(&self) -> Option<&dyn Error> { ... }
-    fn provide<'a>(&'a self, request: &mut Request<'a>) { ... } // nightly
-}
+impl<E> From<E> for Error
+where
+    E: StdError + Send + Sync + 'static,
 ```
+
+allows you to `?` on any `std::error::Error` when returning an `anyhow::Error` result
+
+check out the `eyre` fork (and `color-eyre`)!
 <!-- pause -->
-* Almost a marker trait
-  * See e.g. boring implementations for `std::io::Error` or `std::fmt::Error`
-* Minimal expectations for errors: being able to present themselves
-  * `Debug + Display`
+
+
+`thiserror` for libraries:
+
+"a convenient derive macro for the standard library’s `std::error::Error` trait"
+
 <!-- end_slide -->
 
 
