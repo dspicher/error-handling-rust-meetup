@@ -75,12 +75,12 @@ fn main() {
 Rust vs. Python
 ---
 ```rust +exec
-use std::fs::File;
-use std::path::Path;
+fn read_file() -> Result<String, std::io::Error> {
+    std::fs::read_to_string(std::path::Path::new("inexistent.txt"))
+}
 
 fn main() {
-    let maybe_file = File::open(Path::new("inexistent.txt"));
-    println!("{maybe_file:?}");
+    println!("{:?}", read_file());
 }
 ```
 
@@ -88,7 +88,11 @@ fn main() {
 Compare with 
 ```python +exec
 from pathlib import Path
-contents = Path("inexistent.txt").read_text()
+
+def read_file() -> str:
+    return Path("inexistent.txt").read_text()
+
+print(read_file())
 ```
 <!-- end_slide -->
 
